@@ -75,7 +75,7 @@ namespace CTG
 
         private static void OnInitialize(EventArgs e)
         {
-            Commands.ChatCommands.Add(new Command("ctg.admin", Join, "join", "j"));
+            Commands.ChatCommands.Add(new Command("ctg.join", Join, "join", "j"));
             Commands.ChatCommands.Add(new Command("ctg.admin", SpawnSet, "spawnset", "ss"));
             Commands.ChatCommands.Add(new Command("ctg.admin", BorderSet, "borderset", "bs"));
             Commands.ChatCommands.Add(new Command("ctg.admin", Match, "match", "m"));
