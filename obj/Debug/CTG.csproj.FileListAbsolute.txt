@@ -1,0 +1,9 @@
+C:\Users\aaren\Desktop\tshockref\ServerPlugins\PvPToggle.dll
+C:\Users\aaren\Desktop\tshockref\ServerPlugins\PvPToggle.pdb
+C:\Users\aaren\Desktop\PvPToggle-master\PvPToggle\obj\Debug\PvPToggle.dll
+C:\Users\aaren\Desktop\PvPToggle-master\PvPToggle\obj\Debug\PvPToggle.pdb
+C:\Users\aaren\Desktop\CTG\tshockref\ServerPlugins\CTG.dll
+C:\Users\aaren\Desktop\CTG\tshockref\ServerPlugins\CTG.pdb
+C:\Users\aaren\Desktop\CTG\CTG\obj\Debug\CTG.dll
+C:\Users\aaren\Desktop\CTG\CTG\obj\Debug\CTG.pdb
+C:\Users\aaren\Desktop\CTG\CTG\obj\Debug\CTG.csprojResolveAssemblyReference.cache
