@@ -226,6 +226,7 @@ namespace CTG
         }
 
         #endregion
+
         private static void SpawnSet(CommandArgs args)
         {
             if (args.Parameters.Count != 1)
@@ -266,74 +267,82 @@ namespace CTG
                 return;
             }
 
-            if (args.Parameters[0].ToLower() == "start" || args.Parameters[0].ToLower() == "s")
+            switch (args.Parameters[0].ToLower())
             {
-                if (match)
-                {
-                    args.Player.SendErrorMessage("The Match is already in progress");
-                    return;
-                }
-
-                TShock.Utils.Broadcast("The CTG Match has been started");
-                PrepPhase = true;
-                if (Config.PrepPhase == 0) Config.PrepPhase = 1;
-                initial = new Timer(Config.PrepPhase * 1000);
-                initial.Enabled = true;
-                initial.Elapsed += DisablePrepPhase;
-                match = true;
-
-                lock (CTGplayer)
-                {
-                    foreach (var player in CTGplayer)
+                case "s":
+                case "start":
+                    if (match)
                     {
-                        TShock.Players[player.Index].Teleport(player.spawn.X, player.spawn.Y);
+                        args.Player.SendErrorMessage("The Match is already in progress");
+                        return;
                     }
-                }
-                return;
+
+                    TSPlayer.All.SendInfoMessage("The CTG Match has been started");
+                    PrepPhase = true;
+                    if (Config.PrepPhase == 0) Config.PrepPhase = 1;
+                    initial = new Timer(Config.PrepPhase * 1000);
+                    initial.Enabled = true;
+                    initial.Elapsed += DisablePrepPhase;
+                    match = true;
+
+                    lock (CTGplayer)
+                    {
+                        foreach (var player in CTGplayer)
+                        {
+                            TShock.Players[player.Index].Teleport(player.spawn.X, player.spawn.Y);
+                        }
+                    }
+                    break;
+
+                case "e":
+                case "end":                    
+                    if (!match)
+                    {
+                        args.Player.SendErrorMessage("The Match is not in progress");
+                        return;
+                    }
+
+                    TSPlayer.All.SendSuccessMessage("The CTG Match has been terminated");
+                    match = false;
+                    break;
+
+                case "p":
+                case "pause":
+                    if (!match)
+                    {
+                        args.Player.SendErrorMessage("The match isn't running");
+                        return;
+                    }
+
+                    if (pause)
+                    {
+                        TSPlayer.All.SendSuccessMessage("The CTG Match has been unpaused");
+                        pause = false;
+                    }
+
+                    else
+                    {
+                        TSPlayer.All.SendSuccessMessage("The CTG Match has been paused");
+                        pause = true;
+                    }
+                    break;
+
+                case "c":
+                case "check":
+                    if (match)
+                    {
+                        args.Player.SendInfoMessage("The Match is in progress");
+                    }
+                    else
+                    {
+                        args.Player.SendInfoMessage("The Match is not in progress");
+                    }
+                    break;
+                default:
+                    args.Player.SendErrorMessage("You can only Start/End/Pause/Check the match");
+                    break;
             }
 
-            if (args.Parameters[0].ToLower() == "end" || args.Parameters[0].ToLower() == "e")
-            {
-                if (!match)
-                {
-                    args.Player.SendErrorMessage("The Match is not in progress");
-                    return;
-                }
-
-                TShock.Utils.Broadcast("The CTG Match has been terminated");
-                match = false;
-                return;
-            }
-
-            if (args.Parameters[0].ToLower() == "pause" || args.Parameters[0].ToLower() == "p")
-            {
-                if (pause)
-                {
-                    TShock.Utils.Broadcast("The CTG Match has been unpaused");
-                    pause = false;
-                }
-                else
-                {
-                    TShock.Utils.Broadcast("The CTG Match has been paused");    
-                    pause = true;
-                }
-                return;
-            }
-
-            if (args.Parameters[0].ToLower() == "check" || args.Parameters[0].ToLower() == "c")
-            {
-                if (match)
-                {
-                    args.Player.SendSuccessMessage("The Match is in progress");
-                }
-                else
-                {
-                    args.Player.SendSuccessMessage("The Match is not in progress");
-                }
-                return;
-            }
-
-            args.Player.SendErrorMessage("You can only Start/End/Pause/Check the match");
             return;
         }
 
@@ -342,9 +351,9 @@ namespace CTG
             PrepPhase = false;
             initial.Enabled = false;
             initial.Dispose();
-            TShock.Utils.Broadcast("PrepPhase is now over!");
+            TSPlayer.All.SendInfoMessage("PrepPhase is now over!");
         }
-
+        
         private static void GetData(GetDataEventArgs args)
         {
             var type = args.MsgID;
