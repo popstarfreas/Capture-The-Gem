@@ -79,6 +79,8 @@ namespace CTG
             Commands.ChatCommands.Add(new Command("ctg.admin", SpawnSet, "spawnset", "ss"));
             Commands.ChatCommands.Add(new Command("ctg.admin", BorderSet, "borderset", "bs"));
             Commands.ChatCommands.Add(new Command("ctg.admin", Match, "match", "m"));
+            Commands.ChatCommands.Add(new Command("ctg.admin", reloadConfig, "ctgreload", "ctgr"));
+            teamLock = false;
 
             SetUpConfig();
         }
@@ -160,12 +162,18 @@ namespace CTG
                             if (border > bluespawn.X)
                             {
                                 if (Main.player[player.Index].position.X > border)
-                                    TShock.Players[player.Index].Teleport(border - 5, Main.player[player.Index].position.Y);
+                                {
+                                    TShock.Players[player.Index].Teleport(border - 2, Main.player[player.Index].position.Y);
+                                    TShock.Players[player.Index].TPlayer.velocity.X = -5;
+                                }
                             }
                             else
                             {
                                 if (Main.player[player.Index].position.X < border)
-                                    TShock.Players[player.Index].Teleport(border + 5, Main.player[player.Index].position.Y);
+                                {
+                                    TShock.Players[player.Index].Teleport(border + 2, Main.player[player.Index].position.Y);
+                                    TShock.Players[player.Index].TPlayer.velocity.X = 5;
+                                }
                             }
                         }
 
