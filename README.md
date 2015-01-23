@@ -3,7 +3,7 @@ Capture-The-Gem
 
 A plugin for tShock that aids CTG
 
-Permissions: ctg.admin, ctg.join
+Permissions: ctg.admin
  
 Commands: /join (or /j), /spawnset (or /ss), /borderset (or /bs), /match (or /m)
  
