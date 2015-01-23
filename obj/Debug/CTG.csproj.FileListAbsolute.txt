@@ -15,6 +15,5 @@ C:\Users\aaren\Desktop\CTG\Capture-The-Gem\bin\Release\TShockAPI.dll
 C:\Users\aaren\Desktop\CTG\Capture-The-Gem\bin\Release\MySql.Data.dll
 C:\Users\aaren\Desktop\CTG\Capture-The-Gem\bin\Release\HttpServer.dll
 C:\Users\aaren\Desktop\CTG\Capture-The-Gem\bin\Release\Mono.Data.Sqlite.dll
-C:\Users\aaren\Desktop\CTG\Capture-The-Gem\obj\Debug\CTG.csprojResolveAssemblyReference.cache
 C:\Users\aaren\Desktop\CTG\Capture-The-Gem\obj\Debug\CTG.dll
 C:\Users\aaren\Desktop\CTG\Capture-The-Gem\obj\Debug\CTG.pdb
