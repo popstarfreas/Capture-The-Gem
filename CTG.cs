@@ -19,9 +19,10 @@ namespace CTG
         private static Timer initial;
         private static CTGConfig Config { get; set; }
         public static Vector2 bluespawn, redspawn;
-        public static int border;
+        public static Vector2 border;
         public static bool match, pause, PrepPhase, teamLock;
         public static DateTime LastCheck = DateTime.UtcNow;
+        public static int timerElapsed;
 
         public override Version Version
         {
@@ -49,6 +50,7 @@ namespace CTG
             ServerApi.Hooks.NetGetData.Register(this, GetData);
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
             ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
+            ServerApi.Hooks.ServerChat.Register(this, OnChat);
 
             Config = new CTGConfig();
         }
@@ -63,6 +65,7 @@ namespace CTG
                 ServerApi.Hooks.NetGetData.Deregister(this, GetData);
                 ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
                 ServerApi.Hooks.ServerLeave.Deregister(this, OnLeave);
+                ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
             }
             base.Dispose(disposing);
         }
@@ -106,6 +109,44 @@ namespace CTG
 
         #endregion
 
+        private void OnChat(ServerChatEventArgs args)
+        {
+            if (args.Text.StartsWith("/"))
+            {
+
+                if (args.Text.Substring(0, 1) == "/" && args.Text.Length < 2)
+                {
+                    args.Handled = true;
+                    return;
+                }
+
+                if (args.Text.Substring(0, 2) == "/p")
+                {
+                    TSPlayer.All.SendMessage("(Public) <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text.Substring(3), Color.White);
+                    Console.WriteLine("(Public) <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text.Substring(3), Color.White);
+                    args.Handled = true;
+                    return;
+                }
+            }
+            else
+            {
+                var team = Tools.GetPlayerByIndex(args.Who).team;
+                var teamName = team == 1 ? "Red Team" : "Blue Team";
+                var color = team == 3 ? Color.LightBlue : Color.MediumVioletRed;
+                foreach (var player in CTGplayer)
+                {
+                    if (player.team == team && player.Index != args.Who)
+                    {
+                        TShock.Players[player.Index].SendMessage("("+teamName+") <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text, color);
+                    }
+                }
+                TShock.Players[args.Who].SendMessage("(" + teamName + ") <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text, color);
+                Console.WriteLine("(" + teamName + ") <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text, color);
+                args.Handled = true;
+                return;
+            }
+        }
+
         void OnSendBytes(SendBytesEventArgs e)
         {
             bool build = (pause || !match); // (pause || !match)
@@ -134,7 +175,7 @@ namespace CTG
         private static void OnUpdate(EventArgs e)
         {
             // This check will make sure it doesn't run too often as it is not needed
-            if ((DateTime.UtcNow - LastCheck).TotalMilliseconds >= 500)
+            if ((DateTime.UtcNow - LastCheck).TotalMilliseconds >= 100)
             {
                 LastCheck = DateTime.UtcNow;
 
@@ -150,28 +191,27 @@ namespace CTG
 
                         if (player.team == 1 && PrepPhase)
                         {
-                            if (border > redspawn.X)
+                            if (border.X > redspawn.X)
                             {
-                                if (Main.player[player.Index].position.X > border)
+                                if (Main.player[player.Index].position.X > border.X)
                                 {
-                                    // Teleporting will be done if they are too far. It's generally a bad idea to teleport
-                                    // because they may get stuck in blocks
-                                    if (Main.player[player.Index].position.X > border + 30)
-                                        TShock.Players[player.Index].Teleport(border - 5, Main.player[player.Index].position.Y);
+                                    // Teleporting will be done if they are too far.
+                                    if (Main.player[player.Index].position.X > border.X + 8 * 16)
+                                        TShock.Players[player.Index].Teleport(border.X - 5, border.Y);
 
-                                    TShock.Players[player.Index].TPlayer.velocity.X = -10;
+                                    TShock.Players[player.Index].TPlayer.velocity.X = -2;
                                     TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
                                 }
                             }
                             else
                             {
-                                if (Main.player[player.Index].position.X < border)
+                                if (Main.player[player.Index].position.X < border.X)
                                 {
-                                    // Teleporting will be done if they are too far. It's generally a bad idea to teleport
-                                    // because they may get stuck in blocks
-                                    if (Main.player[player.Index].position.X < border - 30)
-                                        TShock.Players[player.Index].Teleport(border + 5, Main.player[player.Index].position.Y);
-                                    TShock.Players[player.Index].TPlayer.velocity.X = 10;
+                                    // Teleporting will be done if they are too far. The velocity works better because there's no teleport effect spam
+                                    if (Main.player[player.Index].position.X < border.X - 8*16)
+                                        TShock.Players[player.Index].Teleport(border.X + 5, border.Y);
+
+                                    TShock.Players[player.Index].TPlayer.velocity.X = 2;
                                     TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
                                 }
                             }
@@ -179,29 +219,29 @@ namespace CTG
 
                         if (player.team == 3 && PrepPhase)
                         {
-                            if (border > bluespawn.X)
+                            if (border.X > bluespawn.X)
                             {
-                                if (Main.player[player.Index].position.X > border)
+                                if (Main.player[player.Index].position.X > border.X)
                                 {
                                     // Teleporting will be done if they are too far. It's generally a bad idea to teleport
                                     // because they may get stuck in blocks
-                                    if (Main.player[player.Index].position.X > border + 30)
-                                        TShock.Players[player.Index].Teleport(border - 5, Main.player[player.Index].position.Y);
+                                    if (Main.player[player.Index].position.X > border.X + 8 * 16)
+                                        TShock.Players[player.Index].Teleport(border.X - 5, border.Y);
 
-                                    TShock.Players[player.Index].TPlayer.velocity.X = -10;
+                                    TShock.Players[player.Index].TPlayer.velocity.X = -2;
                                     TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
                                 }
                             }
                             else
                             {
-                                if (Main.player[player.Index].position.X < border)
+                                if (Main.player[player.Index].position.X < border.X)
                                 {
                                     // Teleporting will be done if they are too far. It's generally a bad idea to teleport
                                     // because they may get stuck in blocks
-                                    if (Main.player[player.Index].position.X < border - 30)
-                                        TShock.Players[player.Index].Teleport(border + 5, Main.player[player.Index].position.Y);
+                                    if (Main.player[player.Index].position.X < border.X - 8 * 16)
+                                        TShock.Players[player.Index].Teleport(border.X + 5, border.Y);
 
-                                    TShock.Players[player.Index].TPlayer.velocity.X = 10;
+                                    TShock.Players[player.Index].TPlayer.velocity.X = 2;
                                     TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
                                 }
                             }
@@ -244,6 +284,7 @@ namespace CTG
         {
             var configPath = Path.Combine(TShock.SavePath, "CTGtoggle.json");
             Config = CTGConfig.Read(configPath);
+            args.Player.SendMessage("Config Reloaded!", Color.Green);
         }
 
         #endregion
@@ -254,7 +295,7 @@ namespace CTG
         {
             if (match && teamLock)
             {
-                args.Player.SendMessage("Teams are locked while the match is running!");
+                args.Player.SendMessage("Teams are locked while the match is running!", Color.Aqua);
                 return;
             }
 
@@ -295,7 +336,8 @@ namespace CTG
         #region GameSetup
         private static void BorderSet(CommandArgs args)
         {
-            border = (int)Main.player[args.Player.Index].position.X;
+            border.X = Main.player[args.Player.Index].position.X;
+            border.Y = Main.player[args.Player.Index].position.Y-5;
             args.Player.SendSuccessMessage("Border set at your position.");
             return;
         }
@@ -352,8 +394,9 @@ namespace CTG
 
                 TShock.Utils.Broadcast("The CTG Match has been started");
                 PrepPhase = true;
+                timerElapsed = 0;
                 if (Config.PrepPhase == 0) Config.PrepPhase = 1;
-                initial = new Timer(Config.PrepPhase * 1000);
+                initial = new Timer(1000);
                 initial.Enabled = true;
                 initial.Elapsed += DisablePrepPhase;
                 match = true;
@@ -415,10 +458,17 @@ namespace CTG
 
         private static void DisablePrepPhase(object sender, ElapsedEventArgs args)
         {
-            PrepPhase = false;
-            initial.Enabled = false;
-            initial.Dispose();
-            TShock.Utils.Broadcast("PrepPhase is now over!");
+            if (!pause)
+            {
+                timerElapsed++;
+                if (timerElapsed == Config.PrepPhase)
+                {
+                    PrepPhase = false;
+                    initial.Enabled = false;
+                    initial.Dispose();
+                    TSPlayer.All.SendMessage("PrepPhase is now over!", Color.Aqua);
+                }
+            }
         }
 
         private static void GetData(GetDataEventArgs args)
@@ -440,8 +490,11 @@ namespace CTG
                     args.Handled = true;
                     return;
                 }
-                player.Spawn(0, 0);
-                player.Teleport(ply.spawn.X, ply.spawn.Y);
+
+                //player.Dead = false;
+                //player.Spawn((int)ply.spawn.X, (int)ply.spawn.Y);
+                NetMessage.SendData(4, -1, player.Index, player.Name, player.Index, 0f, 0f, 0f, 0);
+                //player.Teleport(ply.spawn.X, ply.spawn.Y);
                 args.Handled = true;
             }
         }
