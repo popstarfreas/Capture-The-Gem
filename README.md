@@ -5,7 +5,7 @@ A plugin for tShock that aids CTG
 
 Permissions: ctg.admin
  
-Commands: /join (or /j), /spawnset (or /ss), /borderset (or /bs), /match (or /m), /p, /addtime, /lockteam
+Commands: /join (or /j), /spawnset (or /ss), /borderset (or /bs), /match (or /m), /p, /addtime, /lockteams
  
 This plugin is intended for use on a server wherein all players will participate or observe. Players can join a team by using "/join (color)". While the match is not running, all players will be unable to enable pvp. When set to a team, players will also be unable to manually switch teams and when the match is running, players will not be able to switch teams at all if "/lockteam" is set to lock the teams (disabling the use of /j).
 
