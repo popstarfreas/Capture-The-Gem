@@ -90,7 +90,7 @@ namespace CTG
             Commands.ChatCommands.Add(new Command("ctg.admin", BorderSet, "borderset", "bs"));
             Commands.ChatCommands.Add(new Command("ctg.admin", Match, "match", "m"));
             Commands.ChatCommands.Add(new Command("ctg.admin", reloadConfig, "ctgreload", "ctgr"));
-            Commands.ChatCommands.Add(new Command("ctg.admin", lockTeams, "lockteam", ""));
+            Commands.ChatCommands.Add(new Command("ctg.admin", lockTeams, "lockteams", ""));
             Commands.ChatCommands.Add(new Command("ctg.admin", addTime, "addtime", ""));
             teamLock = false;
 
@@ -557,45 +557,6 @@ namespace CTG
                 }
             }
         }
-
-        /*private static void GetData(GetDataEventArgs args)
-        {
-
-            var type = args.MsgID;
-            var player = TShock.Players[args.Msg.whoAmI];
-            if (player == null)
-            {
-                args.Handled = true;
-                return;
-            }
-
-            if (type == PacketTypes.PlayerDamage)
-            {
-                args.
-            }
-
-            if (type == PacketTypes.PlayerKillMe)
-            {
-                var ply = Tools.GetPlayerByIndex(args.Msg.whoAmI);
-                if (ply == null)
-                {
-                    args.Handled = true;
-                    return;
-                }
-
-                player.Dead = false;
-                //player.Spawn((int)ply.spawn.X, (int)ply.spawn.Y);
-                NetMessage.SendData(4, -1, player.Index, player.Name, player.Index, 0f, 0f, 0f, 0);
-                player.SendData(PacketTypes.PlayerKillMe, "", player.Index);
-                //player.Teleport(ply.spawn.X, ply.spawn.Y);
-
-                var messages = new string[] {" was slain by", " was murdered by", " was brutally bashed by ", " was royally smashed by "};
-                Random rnd = new Random();
-                TSPlayer.All.SendMessage(player.Name + messages[rnd.Next(0, 5)] + player.KillingPlayer.Name);
-                args.Handled = true;
-            }
-        }
-    }*/
 
     #region Tools
     public class Tools
