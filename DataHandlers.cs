@@ -60,27 +60,33 @@ namespace CTG
             var pvp = args.Data.ReadBoolean();
             var player = CTG.Tools.GetPlayerByIndex(playerId);
             var text = args.Data.ReadString();
-            var tPlayer = TShock.Players[player.Index];
 
-            tPlayer.Dead = false;
-            tPlayer.Teleport(player.spawn.X, player.spawn.Y);
-            if (pvp)
+            if (player == null)
             {
-                var messages = new string[] { " was slain by ", " was murdered by ", " was brutally bashed by ", " was royally smashed by " };
-                Random rnd = new Random();
-                foreach(var ply in CTG.CTGplayer)
-                {
-                    if (ply.team == player.team)
-                        ply.TSPlayer.SendMessage(player.PlayerName + messages[rnd.Next(0, 5)] + player.killingPlayer.PlayerName, Color.Magenta);
-                    else
-                        ply.TSPlayer.SendMessage(player.PlayerName + messages[rnd.Next(0, 5)] + player.killingPlayer.PlayerName, Color.Indigo);
-                }
-
-                //tPlayer.SendData(PacketTypes.PlayerSpawnSelf, "", player.Index);
-                return true;
+                return false;
             }
 
-            return false;
+            if (pvp)
+            {
+                var messages = new string[] { " was slain by ", " was murdered by ", " was brutally bashed by ", " was royally smashed by ", " has slain ", " has got rid of "};
+                Random rnd = new Random();
+                string message = messages[rnd.Next(0, 6)];
+                foreach(var ply in CTG.CTGplayer)
+                {
+                    if (ply != null)
+                    {
+                        if (ply.team == player.team)
+                            ply.TSPlayer.SendMessage(player.PlayerName + message + player.killingPlayer.PlayerName, Color.Magenta);
+                        else
+                            ply.TSPlayer.SendMessage(player.PlayerName + message + player.killingPlayer.PlayerName, Color.LawnGreen);
+                    }
+                }
+            }
+
+            var deadPlayer = TShock.Players[index];
+            Main.player[player.Index].dead = true;
+            deadPlayer.Dead = true;
+            return true;
         }
 
         private static bool HandlePlayerDamage(GetDataHandlerArgs args)

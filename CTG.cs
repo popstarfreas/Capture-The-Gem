@@ -147,7 +147,7 @@ namespace CTG
                 {
                     if (player.team == team && player.Index != args.Who)
                     {
-                        TShock.Players[player.Index].SendMessage("("+teamName+") <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text, color);
+                        TShock.Players[player.Index].SendMessage("(" + teamName + ") <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text, color);
                     }
                 }
                 TShock.Players[args.Who].SendMessage("(" + teamName + ") <" + Tools.GetPlayerByIndex(args.Who).PlayerName + ">: " + args.Text, color);
@@ -184,19 +184,9 @@ namespace CTG
 
         private static void OnUpdate(EventArgs e)
         {
-            foreach (TSPlayer ply in TShock.Players)
-            {
-                if (ply != null && ply.Active)
-                    if (ply.TPlayer.dead)
-                    {
-                        var player = Tools.GetPlayerByIndex(ply.Index);
-                                ply.Teleport(player.spawn.X, player.spawn.Y);
-                                ply.TPlayer.dead = false;
-                        }
-            }
 
             // This check will make sure it doesn't run too often as it is not needed
-            if ((DateTime.UtcNow - LastCheck).TotalMilliseconds >= 100)
+            if ((DateTime.UtcNow - LastCheck).TotalMilliseconds >= 50)
             {
                 LastCheck = DateTime.UtcNow;
 
@@ -212,54 +202,45 @@ namespace CTG
                             TShock.Players[player.Index].Disable();
 
                         // Border Checks to force players to keep in their own area until PrepPhase is over
-                        if (player.team == 1 && PrepPhase)
+                        if (player.Dead)
                         {
-                            if (border.X > redspawn.X)
-                            {
-                                if (Main.player[player.Index].position.X > border.X)
-                                {
-                                    if (Main.player[player.Index].position.X > border.X + 8 * 16)
-                                        TShock.Players[player.Index].Teleport(border.X - 5, border.Y);
-
-                                    TShock.Players[player.Index].TPlayer.velocity.X = -5;
-                                    TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
-                                }
-                            }
-                            else
-                            {
-                                if (Main.player[player.Index].position.X < border.X)
-                                {
-                                    if (Main.player[player.Index].position.X < border.X - 8*16)
-                                        TShock.Players[player.Index].Teleport(border.X + 5, border.Y);
-
-                                    TShock.Players[player.Index].TPlayer.velocity.X = 5;
-                                    TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
-                                }
-                            }
+                            player.Dead = false;
+                            player.TSPlayer.Teleport(player.spawn.X, player.spawn.Y);
                         }
-
-                        if (player.team == 3 && PrepPhase)
+                        else
                         {
-                            if (border.X > bluespawn.X)
+                            if (player.team == 1 && PrepPhase)
                             {
-                                if (Main.player[player.Index].position.X > border.X)
+                                if (border.X > redspawn.X)
                                 {
-                                    if (Main.player[player.Index].position.X > border.X + 8 * 16)
-                                        TShock.Players[player.Index].Teleport(border.X - 5, border.Y);
-
-                                    TShock.Players[player.Index].TPlayer.velocity.X = -5;
-                                    TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
+                                    if (Main.player[player.Index].position.X > border.X - 16)
+                                    {
+                                        TShock.Players[player.Index].Teleport(border.X - 32, border.Y);
+                                    }
+                                }
+                                else
+                                {
+                                    if (Main.player[player.Index].position.X < border.X + 16)
+                                    {
+                                        TShock.Players[player.Index].Teleport(border.X + 32, border.Y);
+                                    }
                                 }
                             }
-                            else
+                            if (player.team == 3 && PrepPhase)
                             {
-                                if (Main.player[player.Index].position.X < border.X)
+                                if (border.X > bluespawn.X)
                                 {
-                                    if (Main.player[player.Index].position.X < border.X - 8 * 16)
-                                        TShock.Players[player.Index].Teleport(border.X + 5, border.Y);
-
-                                    TShock.Players[player.Index].TPlayer.velocity.X = 5;
-                                    TSPlayer.All.SendData(PacketTypes.PlayerUpdate, "", player.Index);
+                                    if (Main.player[player.Index].position.X > border.X - 16)
+                                    {
+                                        TShock.Players[player.Index].Teleport(border.X - 32, border.Y);
+                                    }
+                                }
+                                else
+                                {
+                                    if (Main.player[player.Index].position.X < border.X + 16)
+                                    {
+                                        TShock.Players[player.Index].Teleport(border.X + 32, border.Y);
+                                    }
                                 }
                             }
                         }
@@ -274,7 +255,7 @@ namespace CTG
                         }
 
                         // If the player tries to disable pvp manually
-                        if (Main.player[player.Index].hostile == false && match)
+                        if (Main.player[player.Index].hostile == false && match && !PrepPhase)
                         {
                             Main.player[player.Index].hostile = true;
                             NetMessage.SendData((int)PacketTypes.TogglePvp, -1, -1, "", player.Index, 0f, 0f, 0f);
@@ -285,6 +266,19 @@ namespace CTG
                             NetMessage.SendData((int)PacketTypes.TogglePvp, -1, -1, "", player.Index, 0f, 0f, 0f);
                         }
                     }
+                }
+            }
+
+            foreach (var deadPlayer in CTGplayer)
+            {
+                if (deadPlayer.TSPlayer.Dead)
+                {
+                    deadPlayer.TSPlayer.RespawnTimer = 0;
+                    var player = Tools.GetPlayerByIndex(deadPlayer.Index);
+                    Main.player[player.Index].dead = false;
+                    deadPlayer.TSPlayer.Dead = false;
+                    deadPlayer.TSPlayer.Spawn();
+                    deadPlayer.Dead = true;
                 }
             }
         }
@@ -330,8 +324,8 @@ namespace CTG
             }
 
             var minutes = Convert.ToInt32(args.Parameters[0]);
-            timerElapsed = timerElapsed - minutes*60;
-            TSPlayer.All.SendMessage(CTGplayer[args.Player.Index].PlayerName + " extended the Prep-Phase by " + minutes + " minutes!", Color.Aqua);
+            timerElapsed = timerElapsed - minutes * 60;
+            TSPlayer.All.SendMessage(Tools.GetPlayerByIndex(args.Player.Index).PlayerName + " extended the Prep-Phase by " + minutes + " minutes!", Color.Aqua);
         }
 
         private static void Join(CommandArgs args)
@@ -375,7 +369,7 @@ namespace CTG
         private static void BorderSet(CommandArgs args)
         {
             border.X = Main.player[args.Player.Index].position.X;
-            border.Y = Main.player[args.Player.Index].position.Y-5;
+            border.Y = Main.player[args.Player.Index].position.Y - 5;
             args.Player.SendSuccessMessage("Border set at your position.");
             return;
         }
@@ -448,6 +442,10 @@ namespace CTG
                     return;
                 }
 
+                PrepPhase = false;
+                initial.Enabled = false;
+                initial.Dispose();
+
                 TSPlayer.All.SendMessage("The CTG Match has been terminated", Color.Aqua);
                 match = false;
                 return;
@@ -498,31 +496,32 @@ namespace CTG
             if (!pause)
             {
                 timerElapsed++;
-                if (timerElapsed == Config.PrepPhase)
-                {
-                    PrepPhase = false;
-                    initial.Enabled = false;
-                    initial.Dispose();
-                    TSPlayer.All.SendMessage("PrepPhase is now over!", Color.Aqua);
-                }
             }
 
-            if (timerElapsed != Config.PrepPhase)
+            if (timerElapsed < Config.PrepPhase)
             {
                 int min = (Config.PrepPhase - timerElapsed) / 60;
                 int seconds = (Config.PrepPhase - timerElapsed) % 60;
                 var timeRemaining = String.Format("{0} Minutes, {1} Seconds", min, seconds);
-                foreach (var ply in TShock.Players)
+                foreach (var ply in CTGplayer)
                 {
-                    ply.SendData(PacketTypes.Status, String.Format("Prep-Phase Time Remaining: \n{0}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", timeRemaining), -1);
+                    ply.TSPlayer.SendData(PacketTypes.Status, String.Format("Prep-Phase Time Remaining: \n{0}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", timeRemaining), -1);
                 }
             }
             else
             {
-                foreach (var ply in TShock.Players)
+                foreach (var ply in CTGplayer)
                 {
-                    ply.SendData(PacketTypes.Status, String.Format("Prep-Phase is over"), -1);
+                    ply.TSPlayer.SendData(PacketTypes.Status, String.Format("Prep-Phase is over\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"), -1);
                 }
+            }
+
+            if (timerElapsed >= Config.PrepPhase)
+            {
+                PrepPhase = false;
+                initial.Enabled = false;
+                initial.Dispose();
+                TSPlayer.All.SendMessage("PrepPhase is now over!", Color.Aqua);
             }
         }
 
@@ -558,33 +557,33 @@ namespace CTG
             }
         }
 
-    #region Tools
-    public class Tools
-    {
-        public static Player GetPlayerByIndex(int index)
+        #region Tools
+        public class Tools
         {
-            return CTG.CTGplayer.FirstOrDefault(player => player.Index == index);
+            public static Player GetPlayerByIndex(int index)
+            {
+                return CTG.CTGplayer.FirstOrDefault(player => player.Index == index);
+            }
         }
+        #endregion
+
+        #region Config
+        public class CTGConfig
+        {
+            public int PrepPhase = 10;
+
+            public void Write(string path)
+            {
+                File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
+            }
+
+            public static CTGConfig Read(string path)
+            {
+                if (!File.Exists(path))
+                    return new CTGConfig();
+                return JsonConvert.DeserializeObject<CTGConfig>(File.ReadAllText(path));
+            }
+        }
+        #endregion
     }
-    #endregion
-
-    #region Config
-    public class CTGConfig
-    {
-        public int PrepPhase = 10;
-
-        public void Write(string path)
-        {
-            File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
-        }
-
-        public static CTGConfig Read(string path)
-        {
-            if (!File.Exists(path))
-                return new CTGConfig();
-            return JsonConvert.DeserializeObject<CTGConfig>(File.ReadAllText(path));
-        }
-    }
-    #endregion
 }
-    }

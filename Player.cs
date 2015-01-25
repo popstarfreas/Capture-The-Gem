@@ -15,6 +15,7 @@ namespace CTG
         public string PlayerName { get { return Main.player[Index].name; } }
         public Vector2 spawn { get { return getSpawn(); } }
         public int team;
+        public bool Dead;
         public Player killingPlayer;
 
 
