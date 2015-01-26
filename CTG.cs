@@ -186,7 +186,7 @@ namespace CTG
         {
 
             // This check will make sure it doesn't run too often as it is not needed
-            if ((DateTime.UtcNow - LastCheck).TotalMilliseconds >= 50)
+            if ((DateTime.UtcNow - LastCheck).TotalMilliseconds >= 100)
             {
                 LastCheck = DateTime.UtcNow;
 
@@ -201,13 +201,40 @@ namespace CTG
                         else if (!match && !TShock.Players[player.Index].Group.HasPermission("ctg.admin"))
                             TShock.Players[player.Index].Disable();
 
-                        // Border Checks to force players to keep in their own area until PrepPhase is over
-                        if (player.Dead)
+                        // If the player has a gem
+                        // Gems:
+                        // None: -1
+                        // Topaz: 1 - Used for Yellow
+                        // Sapphire: 2 - Used for Blue
+                        // Amethyst: 3 - Used for Green
+                        // Ruby: 4 - Used for Red
+                        // Diamond: 5 - Used for (white?)
+                        var gemHeld = player.TSPlayer.TPlayer.gem;
+                        if (gemHeld > 0)
                         {
-                            player.Dead = false;
-                            player.TSPlayer.Teleport(player.spawn.X, player.spawn.Y);
+                            if (gemHeld == 2 && player.team == 3)
+                            {
+                                TSPlayer.All.SendMessage(player.PlayerName + " is returning the Blue Gem!", Color.Aqua);
+                            }
+
+                            if (gemHeld == 2 && player.team != 3)
+                            {
+                                TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Blue Gem!", Color.Aqua);
+                            }
+
+                            if (gemHeld == 4 && player.team == 1)
+                            {
+                                TSPlayer.All.SendMessage(player.PlayerName + " is returning the Red Gem!", Color.Aqua);
+                            }
+
+                            if (gemHeld == 4 && player.team != 1)
+                            {
+                                TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Red Gem!", Color.Aqua);
+                            }
                         }
-                        else
+                        Console.WriteLine(TShock.Players[player.Index].TPlayer.gem);
+                        // Border Checks to force players to keep in their own area until PrepPhase is over
+                        if(!player.Dead)
                         {
                             if (player.team == 1 && PrepPhase)
                             {
@@ -266,19 +293,6 @@ namespace CTG
                             NetMessage.SendData((int)PacketTypes.TogglePvp, -1, -1, "", player.Index, 0f, 0f, 0f);
                         }
                     }
-                }
-            }
-
-            foreach (var deadPlayer in CTGplayer)
-            {
-                if (deadPlayer.TSPlayer.Dead)
-                {
-                    deadPlayer.TSPlayer.RespawnTimer = 0;
-                    var player = Tools.GetPlayerByIndex(deadPlayer.Index);
-                    Main.player[player.Index].dead = false;
-                    deadPlayer.TSPlayer.Dead = false;
-                    deadPlayer.TSPlayer.Spawn();
-                    deadPlayer.Dead = true;
                 }
             }
         }

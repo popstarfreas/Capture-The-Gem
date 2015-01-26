@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using Terraria;
 using TShockAPI;
 
@@ -17,6 +18,7 @@ namespace CTG
         public int team;
         public bool Dead;
         public Player killingPlayer;
+        public Timer respawn;
 
 
         public Player(int index)
@@ -28,6 +30,14 @@ namespace CTG
         {
             if (team == 3) return CTG.bluespawn;
             return CTG.redspawn;
+        }
+
+        public void PlayerRespawned(object sender, ElapsedEventArgs args)
+        {
+            var player = CTG.Tools.GetPlayerByIndex(Index);
+            player.respawn.Enabled = false;
+            player.respawn.Dispose();
+            player.Dead = false;
         }
     }
 }

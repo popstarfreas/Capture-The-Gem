@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Terraria;
 using System.Linq;
 using System.IO;
+using System.Timers;
 using TShockAPI;
 using TerrariaApi.Server;
 using System.IO.Streams;
@@ -83,8 +84,17 @@ namespace CTG
                 }
             }
 
-            var deadPlayer = TShock.Players[index];
-            Main.player[player.Index].dead = true;
+            var deadPlayer = player;
+            deadPlayer.TSPlayer.RespawnTimer = 0;
+            deadPlayer.TSPlayer.Spawn((int)player.spawn.X, (int)player.spawn.Y);
+            player.TSPlayer.Teleport(player.spawn.X, player.spawn.Y);
+            Main.player[player.Index].dead = false;
+            deadPlayer.TSPlayer.Dead = false;
+
+            // This timer is used to make sure the player does not get effected by the border when they are teleported to spawn.
+            deadPlayer.respawn = new Timer(1500);
+            deadPlayer.respawn.Enabled = true;
+            deadPlayer.respawn.Elapsed += deadPlayer.PlayerRespawned;
             deadPlayer.Dead = true;
             return true;
         }
