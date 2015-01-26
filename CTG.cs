@@ -213,27 +213,45 @@ namespace CTG
                         // Amethyst: 3 - Used for Green
                         // Ruby: 4 - Used for Red
                         // Diamond: 5 - Used for (white?)
+                        string[] gemColors = { "Yellow", "Blue", "Green", "Red", "White" };
+
+                        // Taken Gem
                         if (player.gem > 0 && player.oldGem != player.gem)
                         {
-                            if (player.gem  == 2 && player.team == 3)
+                            switch (player.gem)
                             {
-                                TSPlayer.All.SendMessage(player.PlayerName + " is returning the Blue Gem!", Color.Aqua);
+                                case 1:
+                                    if (player.team == 4)
+                                        TSPlayer.All.SendMessage(player.PlayerName + " is returning the Yellow Gem!", Color.Aqua);
+                                    else
+                                        TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Yellow Gem!", Color.Aqua);
+                                    break;
+                                case 2:
+                                    if (player.team == 3)
+                                        TSPlayer.All.SendMessage(player.PlayerName + " is returning the Blue Gem!", Color.Aqua);
+                                    else
+                                        TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Blue Gem!", Color.Aqua);
+                                    break;
+                                case 3:
+                                    if (player.team == 2)
+                                        TSPlayer.All.SendMessage(player.PlayerName + " is returning the Green Gem!", Color.Aqua);
+                                    else
+                                        TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Green Gem!", Color.Aqua);
+                                    break;
+                                case 4:
+                                    if (player.team == 1)
+                                        TSPlayer.All.SendMessage(player.PlayerName + " is returning the Red Gem!", Color.Aqua);
+                                    else
+                                        TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Red Gem!", Color.Aqua);
+                                    break;
                             }
+                        }
 
-                            if (player.gem == 2 && player.team != 3)
-                            {
-                                TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Blue Gem!", Color.Aqua);
-                            }
-
-                            if (player.gem == 4 && player.team == 1)
-                            {
-                                TSPlayer.All.SendMessage(player.PlayerName + " is returning the Red Gem!", Color.Aqua);
-                            }
-
-                            if (player.gem == 4 && player.team != 1)
-                            {
-                                TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Red Gem!", Color.Aqua);
-                            }
+                        // Dropped Gem
+                        if (player.gem == -1 && player.oldGem > 0)
+                        {
+                            var gemColor = gemColors[player.oldGem-1];
+                            TSPlayer.All.SendMessage(player.PlayerName + " has dropped the " + gemColor + " Gem!", Color.Aqua);
                         }
                         
                         // Border Checks to force players to keep in their own area until PrepPhase is over
