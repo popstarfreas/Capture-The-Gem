@@ -201,6 +201,10 @@ namespace CTG
                         else if (!match && !TShock.Players[player.Index].Group.HasPermission("ctg.admin"))
                             TShock.Players[player.Index].Disable();
 
+                        // Update Players current held gem and previous held gem
+                        player.oldGem = player.gem;
+                        player.gem = player.TSPlayer.TPlayer.gem;
+
                         // If the player has a gem
                         // Gems:
                         // None: -1
@@ -209,30 +213,29 @@ namespace CTG
                         // Amethyst: 3 - Used for Green
                         // Ruby: 4 - Used for Red
                         // Diamond: 5 - Used for (white?)
-                        var gemHeld = player.TSPlayer.TPlayer.gem;
-                        if (gemHeld > 0)
+                        if (player.gem > 0 && player.oldGem != player.gem)
                         {
-                            if (gemHeld == 2 && player.team == 3)
+                            if (player.gem  == 2 && player.team == 3)
                             {
                                 TSPlayer.All.SendMessage(player.PlayerName + " is returning the Blue Gem!", Color.Aqua);
                             }
 
-                            if (gemHeld == 2 && player.team != 3)
+                            if (player.gem == 2 && player.team != 3)
                             {
                                 TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Blue Gem!", Color.Aqua);
                             }
 
-                            if (gemHeld == 4 && player.team == 1)
+                            if (player.gem == 4 && player.team == 1)
                             {
                                 TSPlayer.All.SendMessage(player.PlayerName + " is returning the Red Gem!", Color.Aqua);
                             }
 
-                            if (gemHeld == 4 && player.team != 1)
+                            if (player.gem == 4 && player.team != 1)
                             {
                                 TSPlayer.All.SendMessage(player.PlayerName + " has picked up the Red Gem!", Color.Aqua);
                             }
                         }
-                        Console.WriteLine(TShock.Players[player.Index].TPlayer.gem);
+                        
                         // Border Checks to force players to keep in their own area until PrepPhase is over
                         if(!player.Dead)
                         {

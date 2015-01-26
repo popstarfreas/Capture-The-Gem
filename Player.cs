@@ -16,6 +16,8 @@ namespace CTG
         public string PlayerName { get { return Main.player[Index].name; } }
         public Vector2 spawn { get { return getSpawn(); } }
         public int team;
+        public int oldGem;
+        public int gem;
         public bool Dead;
         public Player killingPlayer;
         public Timer respawn;

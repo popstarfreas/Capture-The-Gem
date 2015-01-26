@@ -69,7 +69,7 @@ namespace CTG
 
             if (pvp)
             {
-                var messages = new string[] { " was slain by ", " was murdered by ", " was brutally bashed by ", " was royally smashed by ", " has slain ", " has got rid of "};
+                var messages = new string[] { " was slain by ", " was murdered by ", " was brutally bashed by ", " was royally smashed by ", " has slain ", " gave up on "};
                 Random rnd = new Random();
                 string message = messages[rnd.Next(0, 6)];
                 foreach(var ply in CTG.CTGplayer)
